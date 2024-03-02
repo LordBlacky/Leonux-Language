@@ -1,0 +1,218 @@
+SIMPLE DATA TYPES
+==================================================================================================
+char (is unsigned) <-- Can contain the following ASCII Characters:
+
+Dec ---> Char		Dec ---> Char		Dec ---> Char
+0	null		51	3		72	H
+10	\n		52	4		73	I
+32	SPACE		53	5		74	J	
+33	!		54	6		75	K
+34	"		55	7		76	L
+35	#		56	8		77	M
+36	$		57	9		78	N
+37	%		58	:		79	O
+38	&		59	;		80	P
+39 	'		60	<		81	Q
+40	(		61	=		82	R
+41	)		62	>		83	S
+42	*		63	?		84	T
+43	+		64	@		85	U
+44	,		65	A		86	V
+45	-		66	B		87	W
+46	.		67	C		88	X
+47	/		68	D		89	Y
+48	0		69	E		90	Z
+49	1		70	F		91	[
+50	2		71	G		92	\
+
+Dec ---> Char		Dec ---> Char		Dec ---> Char
+93	]		106	j		119	w
+94	^		107	k		120	x
+95	_		108	l		121	y
+96	`		109	m		122	z
+97	a		110	n		123	{
+98	b		111	o		124	|
+99	c		112	p		125	}
+100	d		113	q		126	~
+101	e		114	r		 -		
+102	f		115	s		 -	
+103	g		116	t		 -	
+104	h		117	u		 -	
+105	i		118	v		 -		
+
+-------------------------------------------------------------------------------------------
+We use the decimal system with the following digits 0,1,2,3,4,5,6,7,8,9
+
+float (is signed) <-- Can contain floating point numbers 
+(See C double for value range)
+
+int (is signed) <-- Can contain integer numbers 
+(See C signed int for value range)
+
+!! There is no data type bool : Use int 0,1 for true/false !!
+
+Support for other Simple DataTypes may be added in the future!
+
+GENERAL THINGS
+===========================================================================================
+Most operations are used in the following way:
+
+Let's say we like to do the following calculation: int x = 3 + 5
+
+DECLARE int x
+LOAD int 3
+LOAD int 5
+ADD
+STORE x
+
+Example for Variable Load, Pointer Load:
+
+DECLARE int x
+ADDR x
+POINTER int y
+POINTER ptr int z
+STORE y
+LOAD int 1
+LOAD y
+VALUE
+ADD
+STORE y
+
+!! id is not a value on the OPstack, address is a value on the OPstack !!
+
+NUMERIC OPERATIONS
+===========================================================================================
+Operation		Usage					Details
+int ADD int int		int c = int a + int b			-
+float ADD float float	float c = float a + float b		-
+float ADD int float	float c = int a + float b		-
+float ADD float int	float c = float a + int b		-
+
+int MUL int int		int c = int a * int b			-
+float MUL float float	float c = float a * float b		-
+float MUL int float	float c = int a * float b		-
+float MUL float int	float c = float a * int b		-
+
+int SUB int int		int c = int a - int b			-
+float SUB float float	float c = float a - float b		-
+float SUB int float	float c = int a - float b		-
+float SUB float int	float c = float a - int b		-
+
+int DIV int int		int c = int a / int b			-
+float DIV float float	float c = float a / float b		-
+float DIV int float	float c = int a / float b		-
+float DIV float int	float c = float a / int b		-
+
+POINTER ARITHMETICS
+============================================================================================
+Operation		Usage					Details
+POINTER type id		Declare pointer variable		default null pointer
+	type = int/float/char/ptr
+
+addr ADDR id		Get virtual address of variable		Pointer or variable(int,float,char)
+val VALUE addr		Get data stored under the address	-
+	use LOAD id (of ptr) to get addr
+
+LOGIC OPERATIONS
+============================================================================================
+!! There are no booleans in our Language, we will use int 0,1 instead!!
+
+Operation		Usage					Details
+0/1 LAND 0/1		Logical AND				-
+0/1 LOR 0/1		Logical OR (inclusive)			-
+0/1 LXOR 0/1		Logical XOR (exclusive)			-
+LNOT 0/1		Logical NOT				-
+
+COMPARISON OPERATIONS
+=============================================================================================
+Operation		Usage					Details
+0/1 EQ int int		0/1 <-- int a == int b			-
+0/1 NEQ	int int		0/1 <-- int a != int b			-
+0/1 GEQ	int int		0/1 <-- int a >= int b			-
+0/1 LEQ int int		0/1 <-- int a <= int b			-
+0/1 LOW	int int		0/1 <-- int a < int b			-
+0/1 HI	int int		0/1 <-- int a > int b			-
+
+0/1 EQ float float	0/1 <-- float a == float b		-
+0/1 NEQ float float	0/1 <-- float a != float b		-
+0/1 GEQ float float 	0/1 <-- float a >= float b		-
+0/1 LEQ float float	0/1 <-- float a <= float b		-
+0/1 LOW float float	0/1 <-- float a < float b		-
+0/1 HI float float	0/1 <-- float a > float b		-
+
+!!For comparison of int with float both values are first locally converted to float!!
+
+STORAGE OPERATIONS
+==============================================================================================
+Quick overview of the internal storage segments:
+
+SEGMENT 01: TextSegment 	(Where the program is stored)
+SEGMENT 02: Stack		(Where all of the local variables are stored)
+SEGMENT 03: OperationStack	(Where operands are loaded to)
+SEGMENT 04: ReturnStack		(Where return values (funcs and operations) are loaded to)
+
+!! WARNING : ReturnValues will stay on ReturnStack until they get removed manually! !!
+
+SEGMENT 05: Heap		(Where allocated memoryblocks are stored <-- use pointers for access)
+SEGMENT 06: ADDRESS static	(Where hook-address,func-address is stored <-- e.g. GOTO, HOOK, CALL)
+SEGMENT 07: AddressStack	(Where operations/function-address is stored <--e.g. function exit: pgrm jump back)
+
+Operation		Usage					Details
+DECLARE int/float id	declare int/float on Stack(02)		local variable, will be removed after func exit
+LOAD id			OperationStack.push(Stack.get(id))	value will be copied! (For pointer, dest.address will be copied!)
+STORE id		ReturnStack.pop() --> Stack.set(id)	value will be copied! (For pointer, dest.address will be copied!)
+STOREADDR addr value	Store value to addr			Use for pointers to modify variables
+CPY id id		CPY a b --> cpy value b to a		value will be copied! (For pointer, dest.address will be copied!)
+STACKMV			ReturnStack.pop() --> OPStack.push()	will move value from ReturnStack to OPStack (temp variables)
+
+--------------------------------------------------------
+Operations on constants
+LOAD int value
+LOAD float value
+LOAD char value
+--------------------------------------------------------
+
+addr malloc int/float/char/ptr factor	
+			Allocate space on Heap, return addr.	virtual address to first element of allocated space
+
+!! Struct/Union Support may be added in the future!!
+
+free addr		Free space on Heap			address will now point to nirvana
+
+HOOK id			Will create addr.entry on ADDRESS	(can be used for GOTO statement)
+
+FUNCTION USAGE
+==================================================================================================
+Call Function with: CALL id
+
+Declare Function with:
+
+!! PARAM is easier instead of DECLARE type id followed by STORE id which would also work !!
+
+FUNC id //line contains only FUNC,id
+{
+	PARAM id;
+	PARAM id; //There can be multiple parameters, the allocate space on the stack (local variables)	
+	
+	//CODE
+
+	RETURN id;
+	RETURN id;
+	RETURNADDR addr; // addr must be loaded on the OPStack as usual
+	[...] // There can be multiple return-statements, they push value to ReturnStack
+}
+
+!! FUNC main (no param) gets executed at the beginning of the program !!
+!! main will create internal start jump on AddressStack !!
+
+OTHER OPERATIONS (Controls)
+===================================================================================================
+HOOK id			Create hook
+GOTO id			Jump back to HOOK
+
+IF 0/1 GOTO id		Conditional Jump
+
+EOP			End of program
+
+PRINT id		Gibt die Variable auf der Konsole aus
+PRINTADDR addr		Gibt den Wert an der Addresse auf der Konsole aus
